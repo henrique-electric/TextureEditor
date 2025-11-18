@@ -7,12 +7,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 
+#include <dlib/image_io.h>
+
 #include <iostream>
 
 #include "Modules/Textures/Exporter.h"
 #include "Modules/Textures/Loader.h"
 #include "EditorState.h"
-
 
 SDL_FRect src_texture = {
     .x = 0.0f,
@@ -31,8 +32,17 @@ bool is_exported = false;
 float alpha = 0.0f;
 bool done_message = false;
 bool is_texture_dragging = false;
+bool is_exporting = false;
 float drag_offset_x = 0.0f, drag_offset_y = 0.0f;
 
+typedef enum
+{
+    PNG_FORMAT,
+    JPEG_FORMAT,
+    BMP_FORMAT,
+    WEBP_FORMAT,
+    DNG_FORMAT,
+} formats;
 // Message export
 bool is_showed = false;
 
@@ -111,7 +121,7 @@ int main(int, char **)
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    //Editor State init
+    // Editor State init
     editor_state editor_state;
 
     // File Dialog for textures
@@ -148,7 +158,7 @@ int main(int, char **)
                 {
                     float mouse_x = event.button.x;
                     float mouse_y = event.button.y;
-                    is_texture_dragging = is_dragging(&dst_texture, &mouse_x, &mouse_y, &drag_offset_x, &drag_offset_y);
+                    is_texture_dragging = !is_exporting && is_dragging(&dst_texture, &mouse_x, &mouse_y, &drag_offset_x, &drag_offset_y);
                 }
                 break;
 
@@ -185,12 +195,18 @@ int main(int, char **)
                     fileDialog.Open();
                 }
 
-                if (ImGui::MenuItem("Save"))
+                if (ImGui::MenuItem("Save", "Default ( PNG )"))
                 {
 
                     editor_state.f_opt.save_default = true;
 
                     is_exported = exporter.toPNG(loader.get_texture(), loader.get_surface());
+                }
+
+                if (ImGui::MenuItem("Export"))
+                {
+                    if (loader.is_texture_loaded())
+                        editor_state.export_st.open_modal = true;
                 }
 
                 if (ImGui::MenuItem("Close"))
@@ -317,6 +333,136 @@ int main(int, char **)
                 ImGui::End();
             }
         }
+
+        // Exporting ...
+        if (editor_state.export_st.open_modal && loader.is_texture_loaded())
+        {
+            is_exporting = true;
+
+            ImGui::OpenPopup("Export");
+
+            if (ImGui::BeginPopupModal("Export", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Select your preferred format");
+                ImGui::Separator();
+
+                static int format_idx{0};
+
+                ImGui::Combo("Let's doeit", &format_idx, "PNG\0JPEG\0BMP\0WEBP\0DNG\0\0");
+
+                if (ImGui::Button("Export", ImVec2(120, 0)))
+                {
+                    switch (format_idx)
+                    {
+                    case PNG_FORMAT:
+                    {
+                        try
+                        {
+                            dlib::array2d<dlib::rgb_pixel> image;
+                            dlib::load_image(image, loader.get_file_path());
+
+                            const std::string file_output = "exported_dlib.png";
+                            dlib::save_png(image, file_output);
+
+                            std::cout << "Success export with dlib to png format" << std::endl;
+                        }
+                        catch (const std::exception &e)
+                        {
+                            std::cerr << e.what() << '\n';
+                        }
+                    }
+                    break;
+                    case JPEG_FORMAT:
+                    {
+                        try
+                        {
+                            dlib::array2d<dlib::rgb_pixel> image;
+                            dlib::load_image(image, loader.get_file_path());
+
+                            const std::string file_output = "exported_dlib.jpeg";
+                            dlib::save_jpeg(image, file_output);
+
+                            std::cout << "Success export with dlib to jpeg format" << std::endl;
+                        }
+                        catch (const std::exception &e)
+                        {
+                            std::cerr << e.what() << '\n';
+                        }
+                    }
+                    break;
+                    case BMP_FORMAT:
+                    {
+                        try
+                        {
+                            dlib::array2d<dlib::rgb_pixel> image;
+                            dlib::load_image(image, loader.get_file_path());
+
+                            const std::string file_output = "exported_dlib.bmp";
+                            dlib::save_bmp(image, file_output);
+
+                            std::cout << "Success export with dlib to bmp format" << std::endl;
+                        }
+                        catch (const std::exception &e)
+                        {
+                            std::cerr << e.what() << '\n';
+                        }
+                    }
+                    break;
+                    case WEBP_FORMAT:
+                    {
+                        try
+                        {
+                            dlib::array2d<dlib::rgb_pixel> image;
+                            dlib::load_image(image, loader.get_file_path());
+
+                            const std::string file_output = "exported_dlib.webp";
+                            dlib::save_webp(image, file_output);
+
+                            std::cout << "Success export with dlib to webp format" << std::endl;
+                        }
+                        catch (const std::exception &e)
+                        {
+                            std::cerr << e.what() << '\n';
+                        }
+                    }
+                    break;
+                    case DNG_FORMAT:
+                    {
+                        try
+                        {
+                            dlib::array2d<dlib::rgb_pixel> image;
+                            dlib::load_image(image, loader.get_file_path());
+
+                            const std::string file_output = "exported_dlib.dng";
+                            dlib::save_dng(image, file_output);
+
+                            std::cout << "Success export with dlib to dng format" << std::endl;
+                        }
+                        catch (const std::exception &e)
+                        {
+                            std::cerr << e.what() << '\n';
+                        }
+                    }
+                    break;
+                    }
+
+                    editor_state.export_st.open_modal = false;
+                    is_exporting = false;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    editor_state.export_st.open_modal = false;
+                    is_exporting = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
         // Rendering
         ImGui::Render();
 
@@ -324,12 +470,13 @@ int main(int, char **)
 
         SDL_SetRenderDrawColor(renderer, (Uint8)(clear_color.x * 255), (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255), (Uint8)(clear_color.w * 255));
         SDL_RenderClear(renderer);
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
         if (loader.get_texture())
         {
             SDL_RenderTexture(renderer, loader.get_texture(), &src_texture, &dst_texture);
         }
+
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
         SDL_RenderPresent(renderer);
     }
