@@ -1,3 +1,10 @@
+
+//Filters
+typedef struct filters
+{
+    bool blur = false;
+} filters;
+
 typedef struct file_options
 {
     bool save_default = false;
@@ -19,5 +26,8 @@ typedef struct _editor_state
 
     // Export Options
     export_state export_st;
+
+    // Filters
+    filters filter;
 
 } editor_state;

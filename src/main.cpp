@@ -1,3 +1,9 @@
+#include "Modules/Textures/Exporter.h"
+#include "Modules/Textures/Loader.h"
+#include "Modules/Effects/Blur.h"
+
+#include "EditorState.h"
+
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
@@ -7,13 +13,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 
-#include <dlib/image_io.h>
-
 #include <iostream>
-
-#include "Modules/Textures/Exporter.h"
-#include "Modules/Textures/Loader.h"
-#include "EditorState.h"
 
 SDL_FRect src_texture = {
     .x = 0.0f,
@@ -35,6 +35,11 @@ bool is_texture_dragging = false;
 bool is_exporting = false;
 float drag_offset_x = 0.0f, drag_offset_y = 0.0f;
 
+// Filters
+// Gaussian
+float sigma{0.0f};
+bool is_sigma_set{false};
+
 typedef enum
 {
     PNG_FORMAT,
@@ -44,7 +49,7 @@ typedef enum
     DNG_FORMAT,
 } formats;
 // Message export
-bool is_showed = false;
+bool is_showed{false};
 
 bool is_dragging(SDL_FRect *dst_rect, const float *mouse_x, const float *mouse_y, float *drag_offset_x, float *drag_offset_y)
 {
@@ -137,6 +142,8 @@ int main(int, char **)
 
     // Textures
     Exporter exporter("../assets/exported.png");
+
+    Blur blur;
 
     bool done = false;
     while (!done)
@@ -240,6 +247,7 @@ int main(int, char **)
             {
                 if (ImGui::MenuItem("Blur"))
                 {
+                    editor_state.filter.blur = true;
                 }
 
                 ImGui::EndMenu();
@@ -331,6 +339,43 @@ int main(int, char **)
                 ImGui::TextColored(green, "Success exported png!");
 
                 ImGui::End();
+            }
+        }
+
+        // Filtering
+        if (editor_state.filter.blur)
+        {
+            ImGui::OpenPopup("Blur");
+
+            if (ImGui::BeginPopupModal("Blur", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Select your preferred format");
+                ImGui::Separator();
+
+                ImGui::SliderFloat("Sigma value", &sigma, 0.0f, 10.0f);
+
+                if (ImGui::Button("Ok", ImVec2(60, 0)))
+                {
+                    editor_state.filter.blur = false;
+
+                    if (blur.load(loader.get_file_path()))
+                            blur.apply(sigma);
+
+                        std::cout << "applied" << std::endl;
+
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    is_sigma_set = false;
+                    editor_state.filter.blur = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
             }
         }
 

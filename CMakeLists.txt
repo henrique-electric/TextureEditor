@@ -5,6 +5,8 @@ project(textureEditor)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_COMPILER "clang++")
+
 # Find required packages
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
