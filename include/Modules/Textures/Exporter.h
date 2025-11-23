@@ -2,18 +2,34 @@
 
 #include "common.h"
 
+#include "Modules/Textures/Loader.h"
+
+#include <dlib/image_io.h>
+
+static int idx{0};
+
+typedef enum
+{
+    PNG_FORMAT,
+    JPEG_FORMAT,
+    BMP_FORMAT,
+    WEBP_FORMAT,
+    DNG_FORMAT,
+} formats;
+
 class Exporter
 {
 
 private:
-    bool is_exported = false;
+    bool is_exported{false};
     std::string filename;
 
 public:
-    Exporter(std::string filename) : filename(filename){}
+    Exporter(std::string filename) : filename(filename) {}
 
-    bool toPNG(SDL_Texture *texture, SDL_Surface *surface);
-    bool toJPEG(SDL_Texture *texture, SDL_Surface *surface);
-    bool toBMP(SDL_Texture *texture, SDL_Surface *surface);
+    bool toPNG(const std::string filename);
+    bool toJPEG();
+    bool toBMP();
 
-}; 
+    void dlib_exporter(const int format_idx, Loader *loader);
+};

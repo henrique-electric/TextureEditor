@@ -1,22 +1,23 @@
 
-//Filters
+// Filters
 typedef struct filters
 {
-    bool blur = false;
+    bool blur{false};
+    bool edge_enhancement{false};
 } filters;
 
 typedef struct file_options
 {
-    bool save_default = false;
+    bool save_default{false};
 } file_options;
 
 typedef struct _export_state
 {
-    bool open_modal = false;
+    bool open_modal{false};
 
-    bool is_exported = false;
+    bool is_exported{false};
 
-} export_state; 
+} export_state;
 
 typedef struct _editor_state
 {

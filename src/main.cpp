@@ -2,7 +2,8 @@
 #include "Modules/Textures/Loader.h"
 #include "Modules/Textures/State.h"
 
-#include "Modules/Effects/Blur.h"
+#include "Modules/Effects/Filters/Blur.h"
+#include "Modules/Effects/Filters/Edge_Enhancement.h"
 
 #include "EditorState.h"
 
@@ -24,22 +25,22 @@ bool is_texture_dragging = false;
 bool is_exporting = false;
 float drag_offset_x = 0.0f, drag_offset_y = 0.0f;
 
+typedef struct message_state
+{
+    std::string message{"Successfully saved PNG!"};
+    int length{static_cast<int>(message.length())};
+
+    const ImVec2 pos = {20.0f, 30.0f};
+    const ImVec4 green = {0.0f, 180.0f, 0.0f, 255.0f};
+
+    bool is_showed{false};
+
+} message_state;
+
 // Filters
 // Gaussian
 float sigma{0.0f};
 bool is_sigma_set{false};
-
-typedef enum
-{
-    PNG_FORMAT,
-    JPEG_FORMAT,
-    BMP_FORMAT,
-    WEBP_FORMAT,
-    DNG_FORMAT,
-} formats;
-
-// Message export
-bool is_showed{false};
 
 // Timing is everything
 float lastTime = 0.0f, currentTime = 0.0f;
@@ -169,100 +170,81 @@ void mouse_controls(SDL_Event *event)
     }
 }
 
-void dlib_exporter(const int format_idx, Loader *loader)
+void message_log(bool &done_message, bool &is_exported, sdl_state *sdl_vstate, imgui_state *imgui_vstate, message_state *message_vstate)
 {
-    switch (format_idx)
+    if (!done_message && is_exported)
     {
-    case PNG_FORMAT:
-    {
-        try
-        {
-            dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_file_path());
 
-            const std::string file_output = "exported_dlib.png";
-            dlib::save_png(image, file_output);
+        imgui_vstate->init_window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration;
 
-            std::cout << "Success export with dlib to png format" << std::endl;
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-    }
-    break;
-    case JPEG_FORMAT:
-    {
-        try
-        {
-            dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_file_path());
+        currentTime = SDL_GetTicks();
 
-            const std::string file_output = "exported_dlib.jpeg";
-            dlib::save_jpeg(image, file_output);
-
-            std::cout << "Success export with dlib to jpeg format" << std::endl;
-        }
-        catch (const std::exception &e)
+        if (alpha >= 1.0f)
         {
-            std::cerr << e.what() << '\n';
-        }
-    }
-    break;
-    case BMP_FORMAT:
-    {
-        try
-        {
-            dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_file_path());
+            alpha = 1.0f;
 
-            const std::string file_output = "exported_dlib.bmp";
-            dlib::save_bmp(image, file_output);
-
-            std::cout << "Success export with dlib to bmp format" << std::endl;
+            message_vstate->is_showed = true;
         }
-        catch (const std::exception &e)
+        else
         {
-            std::cerr << e.what() << '\n';
+            if (!message_vstate->is_showed)
+            {
+                if (currentTime > lastTime + 30.0f)
+                {
+                    alpha += 0.05f;
+                    lastTime = currentTime;
+                }
+            }
         }
-    }
-    break;
-    case WEBP_FORMAT:
-    {
-        try
-        {
-            dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_file_path());
 
-            const std::string file_output = "exported_dlib.webp";
-            dlib::save_webp(image, file_output);
-
-            std::cout << "Success export with dlib to webp format" << std::endl;
-        }
-        catch (const std::exception &e)
+        if (message_vstate->is_showed)
         {
-            std::cerr << e.what() << '\n';
-        }
-    }
-    break;
-    case DNG_FORMAT:
-    {
-        try
-        {
-            dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_file_path());
 
-            const std::string file_output = "exported_dlib.dng";
-            dlib::save_dng(image, file_output);
+            if (currentTime > lastTime + 1000.0f)
+            {
+                seconds++;
+                lastTime = currentTime;
+            }
 
-            std::cout << "Success export with dlib to dng format" << std::endl;
+            if (seconds == 2)
+            {
+                if (alpha <= 0.0f)
+                {
+                    // Reset
+                    alpha = 0.0f;
+                    message_vstate->is_showed = false;
+                    done_message = true;
+                    seconds = 0;
+                }
+                else
+                {
+                    if (currentTime > lastTime + 30.0f)
+                    {
+                        // Fade Out
+                        alpha -= 0.05f;
+                        lastTime = currentTime;
+                    }
+                }
+            }
         }
-        catch (const std::exception &e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-    }
-    break;
+
+        ImGui::SetNextWindowPos(message_vstate->pos);
+        ImGui::SetNextWindowBgAlpha(alpha);
+        ImGui::Begin("[INFO]", NULL, imgui_vstate->init_window_flags);
+
+        ImGuiStyle &style = ImGui::GetStyle();
+
+        float sizet = ImGui::CalcTextSize(message_vstate->message.c_str()).x + style.FramePadding.x * 2.0f;
+        float avail = ImGui::GetContentRegionAvail().x;
+        float alignment = 0.5f;
+        float off = (avail - sizet) * alignment;
+
+        if (off > 0.0f)
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
+        ImGui::TextColored(message_vstate->green, "%s", message_vstate->message.c_str());
+
+        ImGui::End();
     }
 }
 
@@ -273,6 +255,9 @@ int main(int, char **)
 
     init_sdl(&sdl_vstate);
     init_imgui(&imgui_vstate, &sdl_vstate);
+
+    // Message states
+    message_state message_vstate;
 
     // Editor State init
     editor_state editor_state;
@@ -328,9 +313,12 @@ int main(int, char **)
                 if (ImGui::MenuItem("Save", "Default ( PNG )"))
                 {
 
-                    editor_state.f_opt.save_default = true;
-
-                    is_exported = exporter.toPNG(loader.get_texture(), loader.get_surface());
+                    if (loader.is_texture_loaded())
+                    {
+                        is_exported = exporter.toPNG(loader.get_file_path());
+                        editor_state.f_opt.save_default = true;
+                        done_message = false;
+                    }
                 }
 
                 if (ImGui::MenuItem("Export"))
@@ -346,6 +334,7 @@ int main(int, char **)
 
                 ImGui::EndMenu();
             }
+
             if (ImGui::BeginMenu("Edit"))
             {
                 edit_items();
@@ -357,6 +346,11 @@ int main(int, char **)
                 if (ImGui::MenuItem("Blur"))
                 {
                     editor_state.filter.blur = true;
+                }
+
+                if (ImGui::MenuItem("Edge Enhancement"))
+                {
+                    editor_state.filter.edge_enhancement = true;
                 }
 
                 ImGui::EndMenu();
@@ -378,80 +372,11 @@ int main(int, char **)
             fileDialog.ClearSelected();
         }
 
-        if (is_exported)
-        {
-
-            if (!done_message)
-            {
-                int width, height;
-                SDL_GetWindowSize(sdl_vstate.window, &width, &height);
-                const ImVec2 position(300.0f, 20.0f);
-                const ImVec2 size(160.0f, 10.0f);
-
-                const ImVec4 green = {0.0f, 180.0f, 0.0f, 255.0f};
-
-                imgui_vstate.init_window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration;
-
-                currentTime = SDL_GetTicks();
-
-                if (alpha >= 1.0f)
-                {
-                    alpha = 1.0f;
-
-                    is_showed = true;
-                }
-                else
-                {
-                    if (!is_showed)
-                    {
-                        if (currentTime > lastTime + 30.0f)
-                        {
-                            alpha += 0.05f;
-                            lastTime = currentTime;
-                        }
-                    }
-                }
-
-                if (is_showed)
-                {
-
-                    if (currentTime > lastTime + 1000.0f)
-                    {
-                        seconds++;
-                        lastTime = currentTime;
-                    }
-
-                    if (seconds == 2)
-                    {
-                        if (alpha <= 0.0f)
-                        {
-                            alpha = 0.0f;
-                            done_message = true;
-                        }
-                        else
-                        {
-                            if (currentTime > lastTime + 30.0f)
-                            {
-                                // Fade Out
-                                alpha -= 0.05f;
-                                lastTime = currentTime;
-                            }
-                        }
-                    }
-                }
-                ImGui::SetWindowPos(position);
-                ImGui::SetWindowSize(size);
-                ImGui::SetNextWindowBgAlpha(alpha);
-                ImGui::Begin("[INFO]", NULL, imgui_vstate.init_window_flags);
-
-                ImGui::TextColored(green, "Success exported png!");
-
-                ImGui::End();
-            }
-        }
+        message_log(done_message, is_exported, &sdl_vstate, &imgui_vstate, &message_vstate);
 
         // Filtering
-        if (editor_state.filter.blur)
+
+        if (editor_state.filter.blur && loader.is_texture_loaded())
         {
             ImGui::OpenPopup("Blur");
 
@@ -469,8 +394,6 @@ int main(int, char **)
                     if (blur.load(loader.get_file_path()))
                         blur.apply(sigma);
 
-                    std::cout << "applied" << std::endl;
-
                     ImGui::CloseCurrentPopup();
                 }
 
@@ -485,6 +408,19 @@ int main(int, char **)
                 }
                 ImGui::EndPopup();
             }
+        }
+
+        if (editor_state.filter.edge_enhancement && loader.is_texture_loaded())
+        {
+            static int idx = 0;
+
+            Edge_Enhancement edge_enhance;
+            if (edge_enhance.load(loader.get_file_path()))
+            {
+                edge_enhance.apply(idx);
+                editor_state.filter.edge_enhancement = false;
+            }
+            editor_state.filter.edge_enhancement = false;
         }
 
         // Exporting ...
@@ -505,11 +441,11 @@ int main(int, char **)
 
                 if (ImGui::Button("Export", ImVec2(120, 0)))
                 {
-                    dlib_exporter(format_idx, &loader);
+                    exporter.dlib_exporter(format_idx, &loader);
 
                     editor_state.export_st.open_modal = false;
                     is_exporting = false;
-                    
+
                     ImGui::CloseCurrentPopup();
                 }
 

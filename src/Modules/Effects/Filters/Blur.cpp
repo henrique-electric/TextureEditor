@@ -1,4 +1,4 @@
-#include "Modules/Effects/Blur.h"
+#include "Modules/Effects/Filters/Blur.h"
 
 bool Blur::load(const std::string &filename)
 {
