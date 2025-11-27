@@ -61,12 +61,15 @@ jobs:
         version: 3-latest
         version-sdl-image: 3-latest
 
-    - uses: davisking/dlib@master
-      id: dlib
-      with:
-        path: ./.github/workflows/build_cpp.yaml
-        install-linux-dependencies: true
-        version: 20-latest
+    - name: Clone and install dlib from repo
+      run: |
+        git clone https://github.com/davisking/dlib.git
+        cd dlib
+        # Install CMake if not already (redundant but safe)
+        pip install cmake
+        # Build and install dlib (this compiles from source)
+        pip install . --verbose
+        cd ..
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
