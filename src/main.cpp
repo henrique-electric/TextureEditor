@@ -7,6 +7,7 @@
 
 #include "Modules/Effects/Filters/Blur.h"
 #include "Modules/Effects/Filters/Edge_Enhancement.h"
+#include "Modules/Effects/Filters/Brightness_Adjustment.h"
 
 #include "Modules/Messaging/Messenger.h"
 
@@ -182,16 +183,16 @@ int main(int, char **)
                 if (ImGui::MenuItem("Save", "Default ( PNG )"))
                 {
 
-                    if (loader.is_texture_loaded())
+                    if (loader.is_texture)
                     {
-                        message_vstate.init = exporter.toPNG(loader.get_filename_path());
+                        message_vstate.init = exporter.toPNG(loader.filename_path);
                         message_vstate.message = "Successfully saved image!";
                     }
                 }
 
                 if (ImGui::MenuItem("Export"))
                 {
-                    if (loader.is_texture_loaded())
+                    if (loader.is_texture)
                         editor_vstate.export_st.open_modal = true;
                 }
 
@@ -226,6 +227,14 @@ int main(int, char **)
 
                     caretaker->backup();
                     originator->save_action("Edge Enhancement filter");
+                }
+
+                if (ImGui::MenuItem("Brightness Adjustment"))
+                {
+                    editor_vstate.filter.brightness_adjustment = true;
+
+                    caretaker->backup();
+                    originator->save_action("Brightness Adjustment");
                 }
 
                 ImGui::EndMenu();
@@ -267,7 +276,7 @@ int main(int, char **)
 
         // Filtering
 
-        if (editor_vstate.filter.blur && loader.is_texture_loaded())
+        if (editor_vstate.filter.blur && loader.is_texture)
         {
             Blur blur;
             editor_vstate.is_processing = true;
@@ -288,9 +297,9 @@ int main(int, char **)
                     editor_vstate.filter.blur = false;
                     editor_vstate.is_processing = false;
                     caretaker->backup();
-                    originator->save_snapshot(loader.get_texture());
+                    originator->save_snapshot(loader.texture, loader.filename_path);
 
-                    if (blur.load(loader.get_filename_path()))
+                    if (blur.load(loader.filename_path))
                         blur.apply(sigma, loader, &sdl_vstate);
 
                     message_vstate.init = true;
@@ -312,14 +321,14 @@ int main(int, char **)
             }
         }
 
-        if (editor_vstate.filter.edge_enhancement && loader.is_texture_loaded())
+        if (editor_vstate.filter.edge_enhancement && loader.is_texture)
         {
             Edge_Enhancement edge_enhance;
-            if (edge_enhance.load(loader.get_filename_path()))
-            {
-                caretaker->backup();
-                originator->save_snapshot(loader.get_texture());
+            caretaker->backup();
+            originator->save_snapshot(loader.texture, loader.filename_path);
 
+            if (edge_enhance.load(loader.filename_path))
+            {
                 edge_enhance.apply(loader, &sdl_vstate);
 
                 message_vstate.init = true;
@@ -331,8 +340,31 @@ int main(int, char **)
             editor_vstate.filter.edge_enhancement = false;
         }
 
+        if (editor_vstate.filter.brightness_adjustment && loader.is_texture)
+        {
+            Brightness_Adjustment brightness_adjust;
+
+            caretaker->backup();
+            originator->save_snapshot(loader.texture, loader.filename_path);
+
+            if (brightness_adjust.load(loader.filename_path))
+            {
+
+                float alpha = 2.5;
+                int beta = 100;
+
+                brightness_adjust.apply(alpha, beta, loader, &sdl_vstate);
+
+                message_vstate.init = true;
+                message_vstate.message = "Applied & Exported! ( Brightness Adjustment )";
+
+                editor_vstate.filter.brightness_adjustment = false;
+            }
+            editor_vstate.filter.brightness_adjustment = false;
+        }
+
         // Exporting ...
-        if (editor_vstate.export_st.open_modal && loader.is_texture_loaded())
+        if (editor_vstate.export_st.open_modal && loader.is_texture)
         {
             editor_vstate.is_processing = true;
 
@@ -383,9 +415,9 @@ int main(int, char **)
         SDL_SetRenderDrawColor(sdl_vstate.renderer, (Uint8)(imgui_vstate.clear_color.x * 255), (Uint8)(imgui_vstate.clear_color.y * 255), (Uint8)(imgui_vstate.clear_color.z * 255), (Uint8)(imgui_vstate.clear_color.w * 255));
         SDL_RenderClear(sdl_vstate.renderer);
 
-        if (loader.get_texture())
+        if (loader.texture)
         {
-            SDL_RenderTexture(sdl_vstate.renderer, loader.get_texture(), &sdl_vstate.src, &sdl_vstate.dst);
+            SDL_RenderTexture(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst);
         }
 
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdl_vstate.renderer);

@@ -61,6 +61,8 @@ jobs:
         version: 3-latest
         version-sdl-image: 3-latest
 
+        #To Do: cmake module in python
+
     - name: Clone and install dlib from repo
       run: |
         git clone https://github.com/davisking/dlib.git

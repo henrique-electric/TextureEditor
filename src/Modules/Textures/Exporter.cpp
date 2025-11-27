@@ -84,7 +84,7 @@ void Exporter::dlib_exporter(const int format_idx, Loader *loader)
         try
         {
             dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_filename_path());
+            dlib::load_image(image, loader->filename_path);
 
             idx_png++;
 
@@ -104,7 +104,7 @@ void Exporter::dlib_exporter(const int format_idx, Loader *loader)
         try
         {
             dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_filename_path());
+            dlib::load_image(image, loader->filename_path);
 
             idx_jpeg++;
 
@@ -123,7 +123,7 @@ void Exporter::dlib_exporter(const int format_idx, Loader *loader)
         try
         {
             dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_filename_path());
+            dlib::load_image(image, loader->filename_path);
 
             idx_bmp++;
 
@@ -143,7 +143,7 @@ void Exporter::dlib_exporter(const int format_idx, Loader *loader)
         try
         {
             dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_filename_path());
+            dlib::load_image(image, loader->filename_path);
 
             idx_webp++;
 
@@ -163,7 +163,7 @@ void Exporter::dlib_exporter(const int format_idx, Loader *loader)
         try
         {
             dlib::array2d<dlib::rgb_pixel> image;
-            dlib::load_image(image, loader->get_filename_path());
+            dlib::load_image(image, loader->filename_path);
 
             idx_dng++;
 

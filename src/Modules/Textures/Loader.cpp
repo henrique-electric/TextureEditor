@@ -1,5 +1,4 @@
 #include "Modules/Textures/Loader.h"
-
 #include <dlib/image_io.h>
 
 SDL_Texture *Loader::texture_load(const char *filename, SDL_Renderer *renderer, SDL_FRect *src)

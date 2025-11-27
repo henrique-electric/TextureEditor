@@ -6,6 +6,8 @@ class Originator
 private:
     std::string state_;
     std::stack<SDL_Texture *> textures;
+    std::stack<std::string> filenames;
+
     std::string generate_random_string(int length = 10)
     {
         const char alphanum[] =
@@ -28,11 +30,13 @@ public:
         std::cout << "Originator: My initial state is: " << this->state_ << std::endl;
     }
 
-    void save_snapshot(SDL_Texture *texture)
+    void save_snapshot(SDL_Texture *texture, std::string filename)
     {
         std::cout << "Originator: snapshot being saved" << std::endl;
         this->state_ = this->generate_random_string(30);
         this->textures.push(texture);
+        this->filenames.push(filename);
+        std::cout << "Originator: Filename: " << filename << std::endl;
         std::cout << "Originator: and my state has changed to: " << this->state_ << std::endl;
     }
 
@@ -53,10 +57,13 @@ public:
         this->state_ = memento->state();
         
         std::cout << "Originator: My state has changed to: " << this->state_ << std::endl;
-        if(!this->textures.empty())
+        if(!this->textures.empty() && !this->filenames.empty())
         {
-            loader->set_texture(this->textures.top());
+            loader->texture = this->textures.top();
+            loader->filename_path = this->filenames.top();
+            
             this->textures.pop();
+            this->filenames.pop();
         }
             
         delete memento;

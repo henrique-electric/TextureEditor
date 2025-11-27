@@ -14,6 +14,5 @@ public:
     }
 
     bool load(const std::string &filename);
-
     bool apply(const float &sigma, Loader &loader, sdl_state *sdl_pstate);
 };
