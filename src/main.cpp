@@ -128,6 +128,8 @@ int main(int, char **)
     Mouse mouse;
     mouse_controls mouse_vcontrols;
 
+    bool left_cntrl_holded{false};
+
     bool done = false;
     while (!done)
     {
@@ -139,6 +141,24 @@ int main(int, char **)
                 done = true;
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(sdl_vstate.window))
                 done = true;
+
+            if (event.type == SDL_EVENT_KEY_DOWN)
+            {
+                if (event.key.key == SDLK_ESCAPE)
+                {
+                    done = true;
+                }
+
+                if (event.key.key == SDLK_LCTRL)
+                {
+                    left_cntrl_holded = true;
+                }
+
+                if (event.key.key == SDLK_Z && left_cntrl_holded)
+                {
+                    caretaker->undo(&loader);
+                }
+            }
 
             mouse.dragging(&event, sdl_vstate, &mouse_vcontrols, editor_vstate.is_processing);
         }
