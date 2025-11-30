@@ -258,7 +258,7 @@ int main(int, char **)
             if (ImGui::BeginMenu("Settings"))
             {
 
-                if (ImGui::MenuItem("show history ( actions )"))
+                if (ImGui::MenuItem("history of actions"))
                 {
                     caretaker->show_history();
                 }
@@ -282,18 +282,10 @@ int main(int, char **)
 
             if (ImGui::BeginMenu("Report"))
             {
-                // Report bugs/issues/wishlist
-                Report report;
-                report.init();
 
-                if (ImGui::MenuItem("Issues"))
+                if (ImGui::MenuItem("Add Report"))
                 {
-                    report.issues();
-                }
-
-                if (ImGui::MenuItem("Wishlist"))
-                {
-                    report.wishlist();
+                    editor_vstate.report.init = true;
                 }
 
                 ImGui::EndMenu();
@@ -304,16 +296,9 @@ int main(int, char **)
 
                 // About the Authors/Editors/Feedbackers
 
-                if (ImGui::MenuItem("Author"))
-                {
-                }
-
-                if (ImGui::MenuItem("Github"))
-                {
-                }
-
                 if (ImGui::MenuItem("Info"))
                 {
+                    editor_vstate.info.desc = true;
                 }
 
                 ImGui::EndMenu();
@@ -323,14 +308,6 @@ int main(int, char **)
             {
 
                 if (ImGui::MenuItem("Manual"))
-                {
-                }
-
-                if (ImGui::MenuItem("Docs"))
-                {
-                }
-
-                if (ImGui::MenuItem("Info"))
                 {
                 }
 
@@ -350,6 +327,7 @@ int main(int, char **)
                 loader.texture_load(selected.c_str(), sdl_vstate.renderer, &sdl_vstate.src);
             }
 
+            ImGui::Text("Repo: ");
             fileDialog.ClearSelected();
         }
 
@@ -360,10 +338,102 @@ int main(int, char **)
             message.display(&sdl_vstate, &imgui_vstate, &message_vstate);
         }
 
+        // Adding Report
+        if (editor_vstate.report.init)
+        {
+            ImGui::OpenPopup("Report", ImGuiPopupFlags_AnyPopup);
+
+            if (ImGui::BeginPopupModal("Report", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Creating a report ...");
+                ImGui::Separator();
+
+                ImGui::BulletText("Category: ");
+                const char *items[] = {"Issues", "Wishlist", "Feedback"};
+                static int item = 0;
+                ImGui::Combo("Category", &item, items, IM_ARRAYSIZE(items));
+                static char text[1024 * 16] =
+                    {
+                        "Write your report here ...\n"};
+
+                ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
+
+                ImGui::InputTextMultiline("##source", text, IM_ARRAYSIZE(text), ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16), flags);
+
+                ImGui::BulletText("More info: ");
+                ImGui::SameLine(0, 0);
+                ImGui::TextLinkOpenURL("https://github.com/nikiNanev/TextureEditor.git");
+
+                if (ImGui::Button("Report", ImVec2(120, 0)))
+                {
+                    //To Do (Receiving the report on email, site, database, something )
+
+
+                    message_vstate.init = true;
+                    message_vstate.message = " The report was created!";
+
+                    editor_vstate.export_st.open_modal = false;
+                    editor_vstate.is_processing = false;
+                    editor_vstate.report.init = false;
+
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    editor_vstate.report.init = false;
+                    editor_vstate.is_processing = false;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+        }
+
+        // Info ( Author and Repo )
+        if (editor_vstate.info.desc)
+        {
+            ImGui::OpenPopup("Info", ImGuiPopupFlags_AnyPopup);
+
+            if (ImGui::BeginPopupModal("Info", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::BulletText("Design by: Niki Nanev");
+                ImGui::BulletText("Developer: Niki Nanev");
+                ImGui::Separator();
+
+                ImGui::BulletText("Repo: ");
+                ImGui::SameLine(0, 0);
+                ImGui::TextLinkOpenURL("https://github.com/nikiNanev/TextureEditor.git");
+
+                if (ImGui::Button("Okay", ImVec2(120, 0)))
+                {
+                    editor_vstate.export_st.open_modal = false;
+                    editor_vstate.is_processing = false;
+                    editor_vstate.info.desc = false;
+
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+        }
+
         // Filtering
 
         if (editor_vstate.filter.blur && loader.is_texture)
         {
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                editor_vstate.filter.blur = false;
+                editor_vstate.is_processing = false;
+                ImGui::CloseCurrentPopup();
+            }
             Blur blur;
             editor_vstate.is_processing = true;
 
@@ -542,7 +612,7 @@ int main(int, char **)
         {
             editor_vstate.is_processing = true;
 
-            ImGui::OpenPopup("Themes");
+            ImGui::OpenPopup("Themes", ImGuiPopupFlags_AnyPopup);
 
             if (ImGui::BeginPopupModal("Themes", NULL, ImGuiWindowFlags_AlwaysAutoResize))
             {
@@ -557,7 +627,6 @@ int main(int, char **)
                         if (ImGui::Selectable(BackgroundThemeNames[i], is_selected))
                         {
                             currentBgTheme = (BgTheme)i;
-                            ApplyBackgroundColor(); // Apply immediately
                         }
                         if (is_selected)
                             ImGui::SetItemDefaultFocus();
@@ -573,6 +642,8 @@ int main(int, char **)
 
                     message_vstate.init = true; // Success on export
                     message_vstate.message = "Theme Changed!";
+
+                    ApplyBackgroundColor();
 
                     caretaker->backup();
                     originator->save_action("theme changed");
@@ -613,9 +684,6 @@ int main(int, char **)
                         if (ImGui::Selectable(WarmBackgroundNames[i], is_selected))
                         {
                             currentWarmBackground = (WarmBackgrounds)i;
-                            
-                            imgui_vstate.clear_color = GetWarmBackgroundColor(currentWarmBackground);
-
                         }
                         if (is_selected)
                             ImGui::SetItemDefaultFocus();
@@ -631,6 +699,8 @@ int main(int, char **)
 
                     message_vstate.init = true; // Success on export
                     message_vstate.message = "Background Changed!";
+
+                    imgui_vstate.clear_color = GetWarmBackgroundColor(currentWarmBackground);
 
                     caretaker->backup();
                     originator->save_action("background changed");

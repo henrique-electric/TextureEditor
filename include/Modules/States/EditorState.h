@@ -55,15 +55,31 @@ typedef struct Styles
     bool background{false};
 } Styles;
 
+typedef struct Info
+{
+    bool desc{false};
+} Info;
+
+typedef struct report
+{
+    bool init{false};
+} Report_state;
+
 typedef struct _editor_state
 {
     // Export Options
     export_state export_st;
 
+    Info info;
+
     // Filters
     filters filter;
-    edit edit;
-    Styles styles;
-    bool is_processing{false};
 
+    edit edit;
+
+    Styles styles;
+
+    Report_state report;
+
+    bool is_processing{false};
 } editor_state;

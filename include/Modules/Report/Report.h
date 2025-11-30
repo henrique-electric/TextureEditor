@@ -1,5 +1,7 @@
 #include "common.h"
 
+#include "imgui.h"
+
 typedef struct Report
 {
 
@@ -7,9 +9,6 @@ typedef struct Report
     {
 
     }
-
-    void init();
-    void issues();
-    void wishlist();
+    void modal();
 
 } Report;
