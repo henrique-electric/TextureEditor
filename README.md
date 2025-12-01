@@ -1,8 +1,9 @@
 # Texture Editor
 
-### Small texture editor by using IMGUI.
+### Small texture editor by using ImGUI
 
-https://github.com/user-attachments/assets/426bcb15-6a2d-4089-bfe7-a6710ad6ace0
+https://github.com/user-attachments/assets/6fad6d75-36c1-4a08-9258-29cf58733975
+
 
 # Building
 Build instructions for installing the Texture Editor in linux environment by using CMake.
