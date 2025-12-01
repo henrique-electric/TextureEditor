@@ -26,4 +26,4 @@ cd build
 
 # Any Feedback is appreciated
 
-  Any comments, suggestions, advices are appreciated in [youtube channel] ( https://www.youtube.com/playlist?list=PLMug5HR_dLLVrvILvGuNLmg1Qmdk1EMJs ), Discussions, Report from the Texture Editor, or elsewhere ( mails, discord, satellites )! 
+  Any comments, suggestions, advices are appreciated in [youtube channel] (https://www.youtube.com/playlist?list=PLMug5HR_dLLVrvILvGuNLmg1Qmdk1EMJs), Discussions, Report from the Texture Editor, or elsewhere ( mails, discord, satellites )! 
