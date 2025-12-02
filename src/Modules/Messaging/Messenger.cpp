@@ -33,7 +33,7 @@ void Messenger::display(sdl_state *sdl_vstate, imgui_state *imgui_vstate, messag
                 message_vstate->lastTime = message_vstate->currentTime;
             }
 
-            if (message_vstate->seconds == 2)
+            if (message_vstate->seconds >= 2)
             {
                 if (message_vstate->alpha <= 0.0f)
                 {

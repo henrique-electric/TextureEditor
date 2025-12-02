@@ -21,10 +21,13 @@ cd build
 
 # Wish List
 
-  1. Exporting an array of textures ( LOD )
-  2. Bug Report
+  1. Exporting an array of textures ( LOD1,2,3 or more )
+  2. Flip Texture
   3. Resizing on the editor and export ( simultaniously )
+  4. Film grain
+  5. Lomo Effect
+
 
 # Any Feedback is appreciated
 
-  Any comments, suggestions, advices are appreciated in [youtube channel](https://www.youtube.com/playlist?list=PLMug5HR_dLLVrvILvGuNLmg1Qmdk1EMJs), Discussions, Report from the Texture Editor, or elsewhere ( mails, discord, satellites )! 
+  Any comments, suggestions, advices are appreciated in [youtube channel](https://www.youtube.com/playlist?list=PLMug5HR_dLLVrvILvGuNLmg1Qmdk1EMJs), Discussions, Report from the Texture Editor, or elsewhere ( email, discord, satellites )! 

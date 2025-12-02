@@ -17,7 +17,7 @@ typedef struct message_state
 
     // Timing is everything
     float lastTime = 0.0f, currentTime = 0.0f;
-    int seconds = 0;
+    double seconds = 0;
 
 } message_state;
 

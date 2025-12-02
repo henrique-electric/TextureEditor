@@ -92,6 +92,8 @@ void Exporter::dlib_exporter(const int format_idx, Loader *loader, double scale)
 
             this->filename = formater("export_png_", &idx_png, ".png");
 
+            
+
             dlib::save_png(image, this->filename);
         }
         catch (const std::exception &e)

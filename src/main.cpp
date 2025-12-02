@@ -67,6 +67,12 @@ int main(int, char **)
 
     bool done{false};
 
+    double angle = 0.0f;
+
+    double factor_angle = 0.0f;
+
+    double add_wait_seconds = 0.05f;
+
     while (!done)
     {
         SDL_Event event;
@@ -88,6 +94,49 @@ int main(int, char **)
                 if (event.key.key == SDLK_LCTRL)
                 {
                     left_cntrl_holded = true;
+                }
+
+                if (loader.is_texture)
+                {
+                    if (event.key.key == SDLK_R)
+                    {
+                        angle += factor_angle;
+
+                        message_vstate.init = true;
+                        message_vstate.message = "Rotated " + (std::ostringstream() << std::fixed << std::setprecision(2) << angle).str();
+
+                        message_vstate.seconds -= add_wait_seconds;
+                    }
+
+                    if (event.key.key == SDLK_T)
+                    {
+                        angle -= factor_angle;
+
+                        message_vstate.init = true;
+                        message_vstate.message = "Rotated " + (std::ostringstream() << std::fixed << std::setprecision(2) << angle).str();
+
+                        message_vstate.seconds -= add_wait_seconds;
+                    }
+
+                    if (event.key.key == SDLK_F)
+                    {
+                        factor_angle += 0.5f;
+
+                        message_vstate.init = true;
+                        message_vstate.message = "Factor angle " + (std::ostringstream() << std::fixed << std::setprecision(2) << factor_angle).str();
+
+                        message_vstate.seconds -= add_wait_seconds;
+                    }
+
+                    if (event.key.key == SDLK_D)
+                    {
+                        factor_angle -= 0.5f;
+
+                        message_vstate.init = true;
+                        message_vstate.message = "Factor angle " + (std::ostringstream() << std::fixed << std::setprecision(2) << factor_angle).str();
+
+                        message_vstate.seconds -= add_wait_seconds;
+                    }
                 }
 
                 if (event.key.key == SDLK_Z && left_cntrl_holded)
@@ -166,7 +215,8 @@ int main(int, char **)
 
         if (loader.texture)
         {
-            SDL_RenderTexture(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst);
+            // SDL_RenderTexture(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst);
+            SDL_RenderTextureRotated(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst, angle, nullptr, SDL_FLIP_NONE);
         }
 
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdl_vstate.renderer);
