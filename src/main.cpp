@@ -1,11 +1,11 @@
 #include "States/Memento/Caretaker.h"
 
-#include "Controls/Mouse.h"
-
 #include "Messaging/Messenger.h"
 #include "Styles/Background.h"
 
 #include "Menu/Menu.h"
+
+#include "Controls/Controls.h"
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 0
@@ -71,7 +71,11 @@ int main(int, char **)
 
     double factor_angle = 0.0f;
 
-    double add_wait_seconds = 0.05f;
+    double add_wait_seconds = 0.1f;
+
+    // Control objects
+    rotations rotations;
+    flip flip;
 
     while (!done)
     {
@@ -96,47 +100,13 @@ int main(int, char **)
                     left_cntrl_holded = true;
                 }
 
+                // Controls
+
                 if (loader.is_texture)
                 {
-                    if (event.key.key == SDLK_R)
-                    {
-                        angle += factor_angle;
-
-                        message_vstate.init = true;
-                        message_vstate.message = "Rotated " + (std::ostringstream() << std::fixed << std::setprecision(2) << angle).str();
-
-                        message_vstate.seconds -= add_wait_seconds;
-                    }
-
-                    if (event.key.key == SDLK_T)
-                    {
-                        angle -= factor_angle;
-
-                        message_vstate.init = true;
-                        message_vstate.message = "Rotated " + (std::ostringstream() << std::fixed << std::setprecision(2) << angle).str();
-
-                        message_vstate.seconds -= add_wait_seconds;
-                    }
-
-                    if (event.key.key == SDLK_F)
-                    {
-                        factor_angle += 0.5f;
-
-                        message_vstate.init = true;
-                        message_vstate.message = "Factor angle " + (std::ostringstream() << std::fixed << std::setprecision(2) << factor_angle).str();
-
-                        message_vstate.seconds -= add_wait_seconds;
-                    }
-
-                    if (event.key.key == SDLK_D)
-                    {
-                        factor_angle -= 0.5f;
-
-                        message_vstate.init = true;
-                        message_vstate.message = "Factor angle " + (std::ostringstream() << std::fixed << std::setprecision(2) << factor_angle).str();
-
-                        message_vstate.seconds -= add_wait_seconds;
-                    }
+                    // Rotations
+                    rotations.controls(event, angle, factor_angle, add_wait_seconds, message_vstate);
+                    flip.controls(event, message_vstate);
                 }
 
                 if (event.key.key == SDLK_Z && left_cntrl_holded)
@@ -216,7 +186,7 @@ int main(int, char **)
         if (loader.texture)
         {
             // SDL_RenderTexture(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst);
-            SDL_RenderTextureRotated(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst, angle, nullptr, SDL_FLIP_NONE);
+            SDL_RenderTextureRotated(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst, angle, nullptr, flip.flag);
         }
 
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdl_vstate.renderer);
