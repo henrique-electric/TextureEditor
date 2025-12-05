@@ -67,15 +67,10 @@ int main(int, char **)
 
     bool done{false};
 
-    double angle = 0.0f;
-
-    double factor_angle = 0.0f;
-
-    double add_wait_seconds = 0.1f;
-
     // Control objects
     rotations rotations;
     flip flip;
+    center center;
 
     while (!done)
     {
@@ -106,7 +101,9 @@ int main(int, char **)
                 {
                     // Rotations
                     rotations.controls(event, angle, factor_angle, add_wait_seconds, message_vstate);
-                    flip.controls(event, message_vstate);
+                    flip.controls(event, message_vstate, add_wait_seconds);
+                    center.controls(event, message_vstate, &center.point, loader.texture, &sdl_vstate);
+
                 }
 
                 if (event.key.key == SDLK_Z && left_cntrl_holded)
@@ -142,6 +139,9 @@ int main(int, char **)
         if (fileDialog.HasSelected())
         {
             loader.texture_load(fileDialog.GetSelected().c_str(), sdl_vstate.renderer, &sdl_vstate.src);
+
+            //Init parameters to the texture
+            center.init(&sdl_vstate);
 
             fileDialog.ClearSelected();
         }
@@ -186,7 +186,9 @@ int main(int, char **)
         if (loader.texture)
         {
             // SDL_RenderTexture(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst);
-            SDL_RenderTextureRotated(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst, angle, nullptr, flip.flag);
+            SDL_RenderTextureRotated(sdl_vstate.renderer, loader.texture, &sdl_vstate.src, &sdl_vstate.dst, angle, &center.point, flip.flag);
+            SDL_SetRenderDrawColor(sdl_vstate.renderer, 255, 0, 0, 255);
+            SDL_RenderFillRect(sdl_vstate.renderer, &center.rect);            
         }
 
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdl_vstate.renderer);

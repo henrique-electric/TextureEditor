@@ -3,7 +3,7 @@ typedef struct _flip
 {
     SDL_FlipMode flag;
 
-    void controls(SDL_Event &event, message_state &message_vstate)
+    void controls(SDL_Event &event, message_state &message_vstate, float add_wait_seconds)
     {
         if (event.key.key == SDLK_H)
         {
@@ -11,6 +11,8 @@ typedef struct _flip
 
             message_vstate.init = true;
             message_vstate.message = "Flipped Horizontally";
+
+            message_vstate.seconds += add_wait_seconds;
         }
 
         if (event.key.key == SDLK_V)
@@ -19,6 +21,8 @@ typedef struct _flip
 
             message_vstate.init = true;
             message_vstate.message = "Flipped Vertically";
+
+            message_vstate.seconds += add_wait_seconds;
         }
 
         if (event.key.key == SDLK_P)
@@ -27,6 +31,8 @@ typedef struct _flip
 
             message_vstate.init = true;
             message_vstate.message = "No Flip ( Default )";
+
+            message_vstate.seconds += add_wait_seconds;
         }
     }
 

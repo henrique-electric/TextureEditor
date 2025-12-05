@@ -22,7 +22,7 @@ cd build
 # Wish List
 
   1. Exporting an array of textures ( LOD1,2,3 or more )
-  2. Flip Texture
+  2. Gradient map
   3. Resizing on the editor and export ( simultaniously )
   4. Film grain
   5. Lomo Effect
