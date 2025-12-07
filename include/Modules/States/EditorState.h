@@ -31,6 +31,7 @@ typedef struct filters
     bool blur{false};
     bool edge_enhancement{false};
     bool brightness_adjustment{false};
+    bool binary_thresholding{false};
 } filters;
 
 typedef struct _export_state

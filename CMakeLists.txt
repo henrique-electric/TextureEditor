@@ -64,6 +64,8 @@ set(IMGUI_INCLUDES
 message(STATUS "imgui headers found: ${IMGUI_INCLUDES}")
 message(STATUS "imgui sources found: ${IMGUI_SOURCES}")
 
+include_directories(./include)
+
 target_include_directories(imgui PUBLIC ./include imgui ./external/imgui/backends ./external/imgui ./external)
 
 # Link libraries

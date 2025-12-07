@@ -10,6 +10,7 @@
 #include "Effects/Filters/Blur.h"
 #include "Effects/Filters/Edge_Enhancement.h"
 #include "Effects/Filters/Brightness_Adjustment.h"
+#include "Effects/Filters/Binary_Thresholding.h"
 
 #include "States/Memento/Memento.h"
 #include "States/EditorState.h"

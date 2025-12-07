@@ -1,3 +1,9 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+ #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #include "States/Memento/Caretaker.h"
 
 #include "Messaging/Messenger.h"
@@ -156,6 +162,8 @@ int main(int, char **)
         menu_image.filter_blur(editor_vstate, loader, caretaker, originator, message_vstate, sdl_vstate);
         menu_image.edge_enhancement(editor_vstate, loader, caretaker, originator, message_vstate, sdl_vstate);
         menu_image.brightness_adjustment(editor_vstate, loader, caretaker, originator, message_vstate, sdl_vstate);
+
+        menu_image.binary_thresholding(editor_vstate, loader, caretaker, originator, message_vstate, sdl_vstate);
 
         // Editing ( Resize )
         menu_edit.resize(editor_vstate, loader, caretaker, originator, message_vstate, sdl_vstate);
