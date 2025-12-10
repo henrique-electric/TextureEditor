@@ -11,8 +11,6 @@ set(CMAKE_CXX_COMPILER "clang++")
 find_package(SDL3 REQUIRED CONFIG)
 find_package(SDL3_image REQUIRED CONFIG)
 
-find_package(dlib REQUIRED CONFIG)
-
 file(GLOB_RECURSE SOURCE_DIRS LIST_DIRECTORIES true "${CMAKE_SOURCE_DIR}/src/*")
 file(GLOB_RECURSE INCLUDE_DIRS LIST_DIRECTORIES true "${CMAKE_SOURCE_DIR}/include/*")
 
@@ -42,15 +40,15 @@ add_executable(${PROJECT_NAME}
 )
 
 set(IMGUI_SOURCES
-    external/imgui/backends/imgui_impl_sdl3.cpp
-    external/imgui/backends/imgui_impl_sdlrenderer3.cpp
-    external/imgui/backends/imgui_impl_vulkan.cpp
+    deps/imgui/backends/imgui_impl_sdl3.cpp
+    deps/imgui/backends/imgui_impl_sdlrenderer3.cpp
+    deps/imgui/backends/imgui_impl_vulkan.cpp
 
-    external/imgui/imgui.cpp
-    external/imgui/imgui_demo.cpp
-    external/imgui/imgui_draw.cpp
-    external/imgui/imgui_tables.cpp
-    external/imgui/imgui_widgets.cpp)
+    deps/imgui/imgui.cpp
+    deps/imgui/imgui_demo.cpp
+    deps/imgui/imgui_draw.cpp
+    deps/imgui/imgui_tables.cpp
+    deps/imgui/imgui_widgets.cpp)
 
 # Add Dear ImGui sources (adjust paths as needed)
 add_library(imgui
@@ -58,34 +56,18 @@ add_library(imgui
 )
 
 set(IMGUI_INCLUDES
-    ./external/imgui/
-    ./external/imgui/backends/)
+    ./deps/imgui/
+    ./deps/imgui/backends/)
 
 message(STATUS "imgui headers found: ${IMGUI_INCLUDES}")
 message(STATUS "imgui sources found: ${IMGUI_SOURCES}")
 
-include_directories(./include)
-
-target_include_directories(imgui PUBLIC ./include imgui ./external/imgui/backends ./external/imgui ./external)
+include_directories(./include ./include/modules ./deps ${IMGUI_INCLUDES})
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    dlib::dlib
     SDL3
     SDL3_image
     imgui
     m
 )
-
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    -Wl,--no-whole-archive
-    -lsharpyuv
-)
-
-# Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/Modules
-    ${IMGUI_INCLUDES}
-)
-
