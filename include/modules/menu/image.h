@@ -36,6 +36,12 @@ typedef struct _menu_image
                 editor_vstate.filter.binary_thresholds = true;
             }
 
+            if (ImGui::MenuItem("Film Grain"))
+            {
+                editor_vstate.filter.film_grain = true;
+            }
+
+
             ImGui::SeparatorText("Stats");
 
             if (ImGui::MenuItem("General Info"))
@@ -147,7 +153,8 @@ typedef struct _menu_image
     {
 
         if (editor_vstate.filter.binary_thresholds && loader.is_texture)
-        { // Success on export
+        {
+
             _binary_thresholds bt;
 
             ImGui::OpenPopup("Binary Thresholds");
@@ -157,7 +164,7 @@ typedef struct _menu_image
                 ImGui::Text("Binary thresholds");
                 ImGui::Separator();
 
-                //Channels
+                // Channels
                 static float r[2];
                 static float g[2];
                 static float b[2];
@@ -175,14 +182,64 @@ typedef struct _menu_image
                     originator->save_snapshot(loader.texture, loader.filename_path);
 
                     // apply
-                    if(bt.load(loader.filename_path, 4))
+                    if (bt.load(loader.filename_path, 4))
                     {
-                        bt.apply(r, g, b);
+                        bt.apply(r, g, b, &loader, sdl_vstate);
                     }
-
 
                     message_vstate.init = true;
                     message_vstate.message = " Applied & Exported! ( Binary Thresholds )";
+
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    editor_vstate.filter.blur = false;
+                    editor_vstate.is_processing = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+    }
+
+    void film_grain(editor_state &editor_vstate, loader &loader, Caretaker *caretaker, Originator *originator, message_state &message_vstate, sdl_state &sdl_vstate)
+    {
+        if (editor_vstate.filter.film_grain && loader.is_texture)
+        {
+            ImGui::OpenPopup("Film Grain");
+
+            if (ImGui::BeginPopupModal("Film Grain", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Film Grain");
+                ImGui::Separator();
+
+                static int strength = 0;
+                
+                ImGui::InputInt("Strength: ", &strength, 0, 100);
+
+                if (ImGui::Button("Ok", ImVec2(60, 0)))
+                {
+                    editor_vstate.filter.film_grain = false;
+                    editor_vstate.is_processing = false;
+
+                    caretaker->backup();
+                    originator->save_snapshot(loader.texture, loader.filename_path);
+
+                    _film_grain fg;
+
+                    // apply
+                    if (fg.load(loader.filename_path, loader))
+                    {
+                        fg.apply(loader, &sdl_vstate, strength);
+                    }
+
+                    message_vstate.init = true;
+                    message_vstate.message = " Applied & Exported! ( Film Grain )";
 
                     ImGui::CloseCurrentPopup();
                 }

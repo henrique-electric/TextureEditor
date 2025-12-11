@@ -46,17 +46,10 @@ typedef struct _binary_thresholds
         // Update channels to reflect what we actually have
         channels = actual_channels;
 
-        std::cout << "Loaded: " << filename << "\n"
-                  << "  Size: " << width << " x " << height << "\n"
-                  << "  Channels: " << channels << " ("
-                  << (channels == 1 ? "Gray" : channels == 2 ? "Gray+Alpha"
-                                           : channels == 3   ? "RGB"
-                                                             : "RGBA")
-                  << ")\n";
         return true;
     }
 
-    bool apply(float r[], float g[], float b[])
+    bool apply(float r[], float g[], float b[], loader *loader, sdl_state &sdl_vstate)
     {
 
         std::vector<unsigned char> mask(width * height, 0);
@@ -97,6 +90,8 @@ typedef struct _binary_thresholds
         output.append(".png");
 
         stbi_write_png(output.c_str(), width, height, 1, mask.data(), width);
+
+        loader->texture_load(output.c_str(), sdl_vstate.renderer, &sdl_vstate.src);
 
         return true;
     }

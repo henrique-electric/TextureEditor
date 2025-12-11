@@ -2,7 +2,7 @@
 
 bool brightness_adjustment::load(const std::string &filename, loader &loader)
 {
-    return loader.image_load(filename.c_str(), pixel_data);
+    return loader.image_load(filename.c_str(), pixels_data);
 }
 
 bool brightness_adjustment::apply(const float &alpha, const int &beta, loader &loader, sdl_state *sdl_pstate)
@@ -10,29 +10,33 @@ bool brightness_adjustment::apply(const float &alpha, const int &beta, loader &l
 
     static int counter = 0;
 
-    // out_image.set_size(in_image.nr(), in_image.nc());
+    int pixel_index{0};
 
-    // // %%% ouptut = alpha * pixel.channel + beta;
+    int width = loader.width;
+    int height = loader.height;
+    int channels = loader.channels;
 
-    // for (int i = 0; i < in_image.nr(); i++)
-    // {
-    //     for (int j = 0; j < in_image.nc(); j++)
-    //     {
+    if (channels >= 3)
+    {
+        for (int i = 0; i < loader.width; ++i)
+        {
+            for (int j = 0; j < loader.height; ++j)
+            {
+                pixel_index = (i * height + j) * channels;
 
-    //         out_image[i][j].red = alpha * in_image[i][j].red + beta;
-    //         out_image[i][j].green = alpha * in_image[i][j].green + beta;
-    //         out_image[i][j].blue = alpha * in_image[i][j].blue + beta;
-    //         out_image[i][j].alpha = alpha * in_image[i][j].alpha + beta;
-    //     }
-    // }
+                pixels_data[pixel_index + 0] = (unsigned char)(alpha * pixels_data[pixel_index + 0] + beta);
+                pixels_data[pixel_index + 1] = (unsigned char)(alpha * pixels_data[pixel_index + 1] + beta);
+                pixels_data[pixel_index + 2] = (unsigned char)(alpha * pixels_data[pixel_index + 2] + beta);
+            }
+        }
+    }
+    counter++;
+    exporter exporter;
+    std::string filename = exporter.formater("export_brightness_adjustment_", &counter, ".png");
 
-    // counter++;
-    // exporter exporter;
-    // std::string filename = exporter.formater("export_brightness_adjustment_", &counter, ".png");
+    stbi_write_png(filename.c_str(), width, height, channels, pixels_data.data(), width * channels);
 
-    // dlib::save_png(out_image, filename);
-
-    // loader.texture_load(filename.c_str(), sdl_pstate->renderer, &sdl_pstate->src);
+    loader.texture_load(filename.c_str(), sdl_pstate->renderer, &sdl_pstate->src);
 
     return true;
 }

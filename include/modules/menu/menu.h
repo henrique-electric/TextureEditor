@@ -11,6 +11,8 @@
 #include "filters/edge_enhancement.h"
 #include "filters/brightness_adjustment.h"
 #include "filters/binary_thresholds.h"
+#include "filters/film_grain.h"
+
 
 #include "states/memento/memento.h"
 #include "states/editor_state.h"
