@@ -54,6 +54,10 @@ typedef struct _menu_image
                 editor_vstate.filter.emboss = true;
             }
 
+            if (ImGui::MenuItem("Gamma Correction"))
+            {
+                editor_vstate.filter.gamma_correction = true;
+            }
 
             ImGui::SeparatorText("Stats");
 
@@ -254,7 +258,7 @@ typedef struct _menu_image
                 ImGui::Separator();
 
                 static int strength = 0;
-                
+
                 ImGui::InputInt("Strength: ", &strength, 0, 100);
 
                 if (ImGui::Button("Ok", ImVec2(60, 0)))
@@ -284,7 +288,7 @@ typedef struct _menu_image
 
                 if (ImGui::Button("Cancel", ImVec2(120, 0)))
                 {
-                    editor_vstate.filter.blur = false;
+                    editor_vstate.filter.film_grain = false;
                     editor_vstate.is_processing = false;
                     ImGui::CloseCurrentPopup();
                 }
@@ -312,6 +316,99 @@ typedef struct _menu_image
             }
 
             editor_vstate.filter.emboss = false;
+        }
+    }
+
+    void gamma_correction(editor_state &editor_vstate, loader &loader, Caretaker *caretaker, Originator *originator, message_state &message_vstate, sdl_state &sdl_vstate)
+    {
+        if (editor_vstate.filter.gamma_correction && loader.is_texture)
+        {
+            ImGui::OpenPopup("Gamma Correction");
+
+            static int flags = ImGuiWindowFlags_AlwaysAutoResize;
+
+            if (ImGui::BeginPopup("Gamma Correction", flags))
+            {
+                ImGui::Text("Gamma Correction");
+                ImGui::Separator();
+
+                static float gamma = 0;
+                static float prevGamma = gamma;
+                static bool is_applied = false;
+
+                ImGui::SliderFloat("Gamma", &gamma, 1, 30, "%.3f");
+
+                if (ImGui::Button("Ok", ImVec2(60, 0)))
+                {
+
+                    editor_vstate.filter.gamma_correction = false;
+                    editor_vstate.is_processing = false;
+
+                    if(prevGamma != gamma)
+                        is_applied = false;
+
+                    if (!is_applied)
+                    {
+                        caretaker->backup();
+                        originator->save_snapshot(loader.texture, loader.filename_path);
+
+                        _gamma_correction gc;
+
+                        // apply
+                        if (gc.load(loader.filename_path, loader))
+                        {
+                            gc.apply(loader, &sdl_vstate, gamma);
+                        }
+
+                        message_vstate.init = true;
+                        message_vstate.message = " Applied & Exported! ( Gamma Correction )";
+                        prevGamma = gamma;
+                        is_applied = false;
+                    }
+
+                    ImGui::CloseCurrentPopup();
+                }
+
+                // ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+
+                if (ImGui::Button("Apply", ImVec2(120, 0)))
+                {
+                    if(prevGamma != gamma)
+                        is_applied = false;
+
+                    if (!is_applied)
+                    {
+                        caretaker->backup();
+                        originator->save_snapshot(loader.texture, loader.filename_path);
+
+                        _gamma_correction gc;
+
+                        // apply
+                        if (gc.load(loader.filename_path, loader))
+                        {
+                            gc.apply(loader, &sdl_vstate, gamma);
+                        }
+
+                        message_vstate.init = true;
+                        message_vstate.message = " Applied & Exported! ( Gamma Correction )";
+
+                        is_applied = true;
+                        prevGamma = gamma;
+                    }
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    editor_vstate.filter.gamma_correction = false;
+                    editor_vstate.is_processing = false;
+                    is_applied = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
         }
     }
 

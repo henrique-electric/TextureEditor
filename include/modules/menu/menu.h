@@ -14,6 +14,7 @@
 #include "filters/film_grain.h"
 #include "filters/high_pass.h"
 #include "filters/emboss.h"
+#include "filters/gamma_correction.h"
 
 
 #include "states/memento/memento.h"

@@ -18,9 +18,9 @@ bool film_grain::apply(loader &loader, sdl_state *sdl_pstate, int &strength)
 
     if (channels >= 3)
     {
-        for (int i = 0; i < loader.width; ++i)
+        for (int i = 0; i < width; ++i)
         {
-            for (int j = 0; j < loader.height; ++j)
+            for (int j = 0; j < height; ++j)
             {
                 pixel_index = (i * height + j) * channels;
 

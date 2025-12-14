@@ -38,6 +38,7 @@ typedef struct filters
     bool film_grain{false};
 
     bool emboss{false};
+    bool gamma_correction{false};
 } filters;
 
 typedef struct _export_state
