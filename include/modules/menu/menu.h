@@ -18,6 +18,8 @@
 #include "filters/borders.h"
 #include "filters/colorize.h"
 #include "filters/invert.h"
+#include "filters/grayscale.h"
+
 
 #include "states/memento/memento.h"
 #include "states/editor_state.h"

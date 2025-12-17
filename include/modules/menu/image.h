@@ -72,6 +72,11 @@ typedef struct _menu_image
                 editor_vstate.filter.binary_thresholds = true;
             }
 
+            if (ImGui::MenuItem("Grayscale"))
+            {
+                editor_vstate.filter.grayscale = true;
+            }
+
             if (ImGui::MenuItem("Invert"))
             {
                 editor_vstate.filter.invert = true;
@@ -591,7 +596,7 @@ typedef struct _menu_image
                     editor_vstate.filter.colorize = false;
                     editor_vstate.is_processing = false;
 
-                    if(prev_sum != sum)
+                    if (prev_sum != sum)
                         is_applied = false;
 
                     if (!is_applied)
@@ -629,7 +634,7 @@ typedef struct _menu_image
                 if (ImGui::Button("Apply", ImVec2(120, 0)))
                 {
 
-                    if(prev_sum != sum)
+                    if (prev_sum != sum)
                         is_applied = false;
 
                     if (!is_applied)
@@ -673,7 +678,6 @@ typedef struct _menu_image
         }
     }
 
-
     void invert(editor_state &editor_vstate, loader &loader, Caretaker *caretaker, Originator *originator, message_state &message_vstate, sdl_state &sdl_vstate)
     {
         if (editor_vstate.filter.invert && loader.is_texture)
@@ -693,6 +697,28 @@ typedef struct _menu_image
             }
 
             editor_vstate.filter.invert = false;
+        }
+    }
+
+    void grayscale(editor_state &editor_vstate, loader &loader, Caretaker *caretaker, Originator *originator, message_state &message_vstate, sdl_state &sdl_vstate)
+    {
+        if (editor_vstate.filter.grayscale && loader.is_texture)
+        {
+            _grayscale grayscale;
+            caretaker->backup();
+            originator->save_snapshot(loader.texture, loader.filename_path);
+
+            if (grayscale.load(loader.filename_path, loader))
+            {
+                grayscale.apply(loader, &sdl_vstate);
+
+                message_vstate.init = true;
+                message_vstate.message = "Applied & Exported! ( Grayscale )";
+
+                editor_vstate.filter.grayscale = false;
+            }
+
+            editor_vstate.filter.grayscale = false;
         }
     }
 

@@ -42,6 +42,7 @@ typedef struct filters
     bool emboss{false};
     bool gamma_correction{false};
     bool invert{false};
+    bool grayscale{false};
 } filters;
 
 typedef struct _export_state
